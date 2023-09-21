@@ -58,12 +58,51 @@ file(GLOB UTILS_HEADER_FILES src/utils/*.h)
 add_library(${PROJECT_NAME} ${SOURCE_FILES} ${HEADER_FILES} ${PUBLIC_HEADER_FILES}
                             ${SDF_SOURCE_FILES} ${SDF_HEADER_FILES}
                             ${UTILS_SOURCE_FILES} ${UTILS_HEADER_FILES})
+add_library(${PROJECT_NAME}::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
 if(BUILD_SHARED_LIBS AND WIN32)
     set_target_properties(${PROJECT_NAME} PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS ON)
 endif()
+set_target_properties(${PROJECT_NAME} PROPERTIES PUBLIC_HEADER "${PUBLIC_HEADER_FILES}")
 
-target_include_directories(${PROJECT_NAME} PUBLIC include/)
+target_include_directories(${PROJECT_NAME} PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+                                                  $<INSTALL_INTERFACE:include>
+
+                            
+
 target_include_directories(${PROJECT_NAME} PRIVATE src/)
+
+# Install library and CMake config files
+include(GNUInstallDirs)
+install(TARGETS ${PROJECT_NAME} EXPORT ${PROJECT_NAME}
+        PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME})
+
+install(EXPORT ${PROJECT_NAME}Targets
+        FILE ${PROJECT_NAME}Targets.cmake
+        DESTINATION lib/cmake/${PROJECT_NAME}
+)
+
+include(CMakePackageConfigHelpers)
+set(PACKAGE_DEPENDENCIES "")
+if(SDFLIB_USE_SYSTEM_GLM)
+    string(APPEND PACKAGE_DEPENDENCIES "find_dependency(glm)\n")
+endif()
+if(SDFLIB_USE_SYSTEM_SPDLOG)
+    string(APPEND PACKAGE_DEPENDENCIES "find_dependency(spdlog)\n")
+endif()
+if(SDFLIB_USE_SYSTEM_CEREAL)
+    string(APPEND PACKAGE_DEPENDENCIES "find_dependency(cereal)\n")
+endif()
+if(SDFLIB_USE_ASSIMP AND SDFLIB_USE_SYSTEM_ASSIMP)
+    string(APPEND PACKAGE_DEPENDENCIES "find_dependency(assimp)\n")
+endif()
+
+configure_package_config_file(${CMAKE_CURRENT_SOURCE_DIR}/${PROJECT_NAME}Config.cmake.in
+                              "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake"
+                              INSTALL_DESTINATION "lib/cmake/${PROJECT_NAME}"
+                              NO_SET_AND_CHECK_MACRO
+                              NO_CHECK_REQUIRED_COMPONENTS_MACRO)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake
+        DESTINATION lib/cmake/${PROJECT_NAME})
 
 # Add shaders
 file(GLOB SHADER_FILES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}/src/render_engine/shaders 
@@ -72,7 +111,7 @@ file(GLOB SHADER_FILES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}/src/render_engine/sh
                        src/render_engine/shaders/*.comp)
 
 foreach(SHADER IN LISTS SHADER_FILES)
-vadd_custom_command(OUTPUT ${SHADER}
+add_custom_command(OUTPUT ${SHADER}
             COMMAND cmake -E copy_if_different ${CMAKE_CURRENT_SOURCE_DIR}/src/render_engine/shaders/${SHADER} $<TARGET_FILE_DIR:${PROJECT_NAME}>/shaders/${SHADER}
             DEPENDS src/render_engine/shaders/${SHADER}
         )
