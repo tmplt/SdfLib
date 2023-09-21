@@ -62,16 +62,15 @@ add_library(${PROJECT_NAME}::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
 if(BUILD_SHARED_LIBS AND WIN32)
     set_target_properties(${PROJECT_NAME} PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS ON)
 endif()
-set_target_properties(${PROJECT_NAME} PROPERTIES PUBLIC_HEADER "${PUBLIC_HEADER_FILES}")
-
+include(GNUInstallDirs)
 target_include_directories(${PROJECT_NAME} PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-                                                  $<INSTALL_INTERFACE:include>)
+                                                  $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
 target_include_directories(${PROJECT_NAME} PRIVATE src/)
 
 # Install library and CMake config files
-include(GNUInstallDirs)
-install(TARGETS ${PROJECT_NAME} EXPORT ${PROJECT_NAME}
-        PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME})
+install(TARGETS ${PROJECT_NAME} EXPORT ${PROJECT_NAME})
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/SdfLib
+        DESTINATON ${CMAKE_INSTALL_INCLUDEDIR})
 
 install(EXPORT ${PROJECT_NAME}
         FILE ${PROJECT_NAME}Targets.cmake
