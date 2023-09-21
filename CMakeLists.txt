@@ -71,7 +71,8 @@ target_include_directories(${PROJECT_NAME} PRIVATE src/)
 # Install library and CMake config files
 include(GNUInstallDirs)
 install(TARGETS ${PROJECT_NAME} EXPORT ${PROJECT_NAME}
-        PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME})
+        PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}
+        NAMESPACE ${PROJECT_NAME}::)
 
 install(EXPORT ${PROJECT_NAME}
         FILE ${PROJECT_NAME}Targets.cmake
