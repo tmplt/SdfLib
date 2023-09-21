@@ -55,9 +55,12 @@ file(GLOB UTILS_SOURCE_FILES src/utils/*.cpp)
 file(GLOB UTILS_HEADER_FILES src/utils/*.h)
 
 # Add libraries
-add_library(${PROJECT_NAME} STATIC  ${SOURCE_FILES} ${HEADER_FILES} ${PUBLIC_HEADER_FILES}
-                                    ${SDF_SOURCE_FILES} ${SDF_HEADER_FILES}
-                                    ${UTILS_SOURCE_FILES} ${UTILS_HEADER_FILES})
+add_library(${PROJECT_NAME} ${SOURCE_FILES} ${HEADER_FILES} ${PUBLIC_HEADER_FILES}
+                            ${SDF_SOURCE_FILES} ${SDF_HEADER_FILES}
+                            ${UTILS_SOURCE_FILES} ${UTILS_HEADER_FILES})
+if(BUILD_SHARED_LIBS AND WIN32)
+    set_target_properties(${PROJECT_NAME} PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS ON)
+endif()
 
 target_include_directories(${PROJECT_NAME} PUBLIC include/)
 target_include_directories(${PROJECT_NAME} PRIVATE src/)
@@ -69,7 +72,7 @@ file(GLOB SHADER_FILES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}/src/render_engine/sh
                        src/render_engine/shaders/*.comp)
 
 foreach(SHADER IN LISTS SHADER_FILES)
-    add_custom_command(OUTPUT ${SHADER}
+vadd_custom_command(OUTPUT ${SHADER}
             COMMAND cmake -E copy_if_different ${CMAKE_CURRENT_SOURCE_DIR}/src/render_engine/shaders/${SHADER} $<TARGET_FILE_DIR:${PROJECT_NAME}>/shaders/${SHADER}
             DEPENDS src/render_engine/shaders/${SHADER}
         )
