@@ -70,7 +70,7 @@ target_include_directories(${PROJECT_NAME} PRIVATE src/)
 # Install library and CMake config files
 install(TARGETS ${PROJECT_NAME} EXPORT ${PROJECT_NAME})
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/SdfLib
-        DESTINATON ${CMAKE_INSTALL_INCLUDEDIR})
+        DESTINATION ${})
 
 install(EXPORT ${PROJECT_NAME}
         FILE ${PROJECT_NAME}Targets.cmake
