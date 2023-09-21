@@ -65,10 +65,7 @@ endif()
 set_target_properties(${PROJECT_NAME} PROPERTIES PUBLIC_HEADER "${PUBLIC_HEADER_FILES}")
 
 target_include_directories(${PROJECT_NAME} PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-                                                  $<INSTALL_INTERFACE:include>
-
-                            
-
+                                                  $<INSTALL_INTERFACE:include>)
 target_include_directories(${PROJECT_NAME} PRIVATE src/)
 
 # Install library and CMake config files
