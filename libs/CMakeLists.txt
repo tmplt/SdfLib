@@ -137,9 +137,10 @@ if(SDFLIB_BUILD_APPS OR SDFLIB_BUILD_DEBUG_APPS)
 	target_include_directories(stb_image INTERFACE stb)
  endif()
 
-# icg
-add_library(icg INTERFACE)
-target_include_directories(icg INTERFACE InteractiveComputerGraphics)
+if (NOT SDFLIB_USE_SYSTEM_TRIANGLEMESHDISTANCE)
+	add_library(TriangleMeshDistance INTERFACE)
+	target_include_directories(TriangleMeshDistance INTERFACE InteractiveComputerGraphics)
+endif()
 
 if(SDFLIB_BUILD_APPS OR SDFLIB_BUILD_DEBUG_APPS)
 	# glfw

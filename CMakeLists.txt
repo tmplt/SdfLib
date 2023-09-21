@@ -27,7 +27,7 @@ option(SDFLIB_USE_SYSTEM_GLM "Use glm library via find_package instead of downlo
 option(SDFLIB_USE_SYSTEM_SPDLOG "Use spdlog library via find_package instead of downloading it" OFF)
 option(SDFLIB_USE_SYSTEM_CEREAL "Use cereal library via find_package instead of downloading it" OFF)
 option(SDFLIB_USE_SYSTEM_ASSIMP "Use assimp library via find_package instead of downloading it" OFF)
-
+option(SDFLIB_USE_SYSTEM_TRIANGLEMESHDISTANCE "Use TriangleMeshDistance library via system includes instead of downloading it" OFF)
 
 if(SDFLIB_DEBUG_INFO)
     add_compile_definitions(SDFLIB_PRINT_STATISTICS)
@@ -151,7 +151,10 @@ endif()
 target_link_libraries(${PROJECT_NAME} PUBLIC ${SDFLIB_GLM_TARGET})
 target_link_libraries(${PROJECT_NAME} PUBLIC spdlog::spdlog)
 target_link_libraries(${PROJECT_NAME} PUBLIC cereal::cereal)
-target_link_libraries(${PROJECT_NAME} PUBLIC icg)
+
+if(NOT SDFLIB_USE_SYSTEM_TRIANGLEMESHDISTANCE)
+    target_link_libraries(${PROJECT_NAME} PUBLIC TriangleMeshDistance)
+endif()
 
 if(CMAKE_CXX_COMPILER_ID MATCHES GNU)
     target_link_libraries(${PROJECT_NAME} PUBLIC -lstdc++fs)
