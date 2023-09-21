@@ -17,7 +17,7 @@
 
 #define TEST_METHODS 
 #ifdef TEST_METHODS
-#include <InteractiveComputerGraphics/TriangleMeshDistance.h>
+#include <tmd/TriangleMeshDistance.h>
 // #include <CGAL/Simple_cartesian.h>
 // #include <CGAL/AABB_tree.h>
 // #include <CGAL/AABB_traits.h>

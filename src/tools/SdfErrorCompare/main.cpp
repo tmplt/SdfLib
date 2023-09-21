@@ -23,7 +23,7 @@ using namespace sdflib;
 // #define TEST_OPENVDB
 
 #ifdef TEST_ICG
-#include <InteractiveComputerGraphics/TriangleMeshDistance.h>
+#include <tmd/TriangleMeshDistance.h>
 #endif
 #ifdef TEST_CGAL
 #include <CGAL/Simple_cartesian.h>
