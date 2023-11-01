@@ -27,7 +27,7 @@ option(SDFLIB_USE_SYSTEM_GLM "Use glm library via find_package instead of downlo
 option(SDFLIB_USE_SYSTEM_SPDLOG "Use spdlog library via find_package instead of downloading it" OFF)
 option(SDFLIB_USE_SYSTEM_CEREAL "Use cereal library via find_package instead of downloading it" OFF)
 option(SDFLIB_USE_SYSTEM_ASSIMP "Use assimp library via find_package instead of downloading it" OFF)
-
+option(SDFLIB_USE_SYSTEM_TRIANGLEMESHDISTANCE "Use TriangleMeshDistance library via system includes instead of downloading it" OFF)
 
 if(SDFLIB_DEBUG_INFO)
     add_compile_definitions(SDFLIB_PRINT_STATISTICS)
@@ -55,12 +55,51 @@ file(GLOB UTILS_SOURCE_FILES src/utils/*.cpp)
 file(GLOB UTILS_HEADER_FILES src/utils/*.h)
 
 # Add libraries
-add_library(${PROJECT_NAME} STATIC  ${SOURCE_FILES} ${HEADER_FILES} ${PUBLIC_HEADER_FILES}
-                                    ${SDF_SOURCE_FILES} ${SDF_HEADER_FILES}
-                                    ${UTILS_SOURCE_FILES} ${UTILS_HEADER_FILES})
-
-target_include_directories(${PROJECT_NAME} PUBLIC include/)
+add_library(${PROJECT_NAME} ${SOURCE_FILES} ${HEADER_FILES} ${PUBLIC_HEADER_FILES}
+                            ${SDF_SOURCE_FILES} ${SDF_HEADER_FILES}
+                            ${UTILS_SOURCE_FILES} ${UTILS_HEADER_FILES})
+add_library(${PROJECT_NAME}::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
+if(BUILD_SHARED_LIBS AND WIN32)
+    set_target_properties(${PROJECT_NAME} PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS ON)
+endif()
+include(GNUInstallDirs)
+target_include_directories(${PROJECT_NAME} PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+                                                  $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
 target_include_directories(${PROJECT_NAME} PRIVATE src/)
+
+# Install library and CMake config files
+install(TARGETS ${PROJECT_NAME} EXPORT ${PROJECT_NAME})
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/SdfLib
+        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+
+install(EXPORT ${PROJECT_NAME}
+        FILE ${PROJECT_NAME}Targets.cmake
+        DESTINATION lib/cmake/${PROJECT_NAME}
+        NAMESPACE ${PROJECT_NAME}::
+)
+
+include(CMakePackageConfigHelpers)
+set(PACKAGE_DEPENDENCIES "")
+if(SDFLIB_USE_SYSTEM_GLM)
+    string(APPEND PACKAGE_DEPENDENCIES "find_dependency(glm)\n")
+endif()
+if(SDFLIB_USE_SYSTEM_SPDLOG)
+    string(APPEND PACKAGE_DEPENDENCIES "find_dependency(spdlog)\n")
+endif()
+if(SDFLIB_USE_SYSTEM_CEREAL)
+    string(APPEND PACKAGE_DEPENDENCIES "find_dependency(cereal)\n")
+endif()
+if(SDFLIB_USE_ASSIMP AND SDFLIB_USE_SYSTEM_ASSIMP)
+    string(APPEND PACKAGE_DEPENDENCIES "find_dependency(assimp)\n")
+endif()
+
+configure_package_config_file(${CMAKE_CURRENT_SOURCE_DIR}/${PROJECT_NAME}Config.cmake.in
+                              "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake"
+                              INSTALL_DESTINATION "lib/cmake/${PROJECT_NAME}"
+                              NO_SET_AND_CHECK_MACRO
+                              NO_CHECK_REQUIRED_COMPONENTS_MACRO)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake
+        DESTINATION lib/cmake/${PROJECT_NAME})
 
 # Add shaders
 file(GLOB SHADER_FILES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}/src/render_engine/shaders 
@@ -69,7 +108,7 @@ file(GLOB SHADER_FILES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}/src/render_engine/sh
                        src/render_engine/shaders/*.comp)
 
 foreach(SHADER IN LISTS SHADER_FILES)
-    add_custom_command(OUTPUT ${SHADER}
+add_custom_command(OUTPUT ${SHADER}
             COMMAND cmake -E copy_if_different ${CMAKE_CURRENT_SOURCE_DIR}/src/render_engine/shaders/${SHADER} $<TARGET_FILE_DIR:${PROJECT_NAME}>/shaders/${SHADER}
             DEPENDS src/render_engine/shaders/${SHADER}
         )
@@ -112,7 +151,10 @@ endif()
 target_link_libraries(${PROJECT_NAME} PUBLIC ${SDFLIB_GLM_TARGET})
 target_link_libraries(${PROJECT_NAME} PUBLIC spdlog::spdlog)
 target_link_libraries(${PROJECT_NAME} PUBLIC cereal::cereal)
-target_link_libraries(${PROJECT_NAME} PUBLIC icg)
+
+if(NOT SDFLIB_USE_SYSTEM_TRIANGLEMESHDISTANCE)
+    target_link_libraries(${PROJECT_NAME} PUBLIC TriangleMeshDistance)
+endif()
 
 if(CMAKE_CXX_COMPILER_ID MATCHES GNU)
     target_link_libraries(${PROJECT_NAME} PUBLIC -lstdc++fs)

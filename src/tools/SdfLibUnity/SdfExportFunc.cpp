@@ -1,7 +1,7 @@
 #include "SdfExportFunc.h"
 #include "spdlog/sinks/rotating_file_sink.h"
 
-#include <InteractiveComputerGraphics/TriangleMeshDistance.h>
+#include <tmd/TriangleMeshDistance.h>
 
 using namespace sdflib;
 
